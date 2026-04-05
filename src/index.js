@@ -1,28 +1,39 @@
-const {PORT} = require('./config/server-config');
 
+const { PORT } = require('./config/server-config');
 
 const express = require('express');
 const bodyParser = require('body-parser');
 
-const { sendBasicEmail } = require('./services/email-service');
+const cron = require('node-cron');
+const sender = require('./config/email-config'); // transporter
 
 const setupAndStartServer = () => {
     const app = express();
     app.use(bodyParser.json());
-    app.use(bodyParser.urlencoded({extended:true}));
+    app.use(bodyParser.urlencoded({ extended: true }));
 
-    app.listen(PORT,() => {
+    app.listen(PORT, () => {
         console.log(`server started at PORT : ${PORT}`);
 
-        sendBasicEmail(
-        'support@admin.com', //from
-        '24363@iiitu.ac.in', //to
-        'This is a testing Email', //subj
-        'Hey! , I hope u like the support' //text
-        );
-    });
+        // 🔥 CRON JOB (हर 2 minute)
+        cron.schedule('*/2 * * * *', async () => {
+            console.log("Running cron job: Sending email evry 2 min...");
 
-    
+            // try {
+            //     await sender.sendMail({
+            //         from: "Airline Booking ✈️ <support@admin.com>",
+            //         to: "24363@iiitu.ac.in", // testing ke liye same rakh
+            //         subject: "Reminder ⏰",
+            //         text: "This mail is sent every 2 minutes"
+            //     });
+
+            //     console.log("Email sent successfully ✅");
+            // } catch (error) {
+            //     console.log("Error sending email ❌", error);
+            // }
+        });
+
+    });
 }
 
 setupAndStartServer();
