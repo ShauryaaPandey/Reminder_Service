@@ -7,22 +7,29 @@ const cron = require('node-cron');
 const sender = require('./config/email-config'); // transporter
 const { PORT } = require('./config/server-config');
 const TicketController = require('./controller/ticket-controller');
+const { createChannel } = require('./util/messageQueue');
+
+const m = require('./models/notificationticket');
 
 
 const jobs = require('./util/job');
 
-const setupAndStartServer = () => {
+const setupAndStartServer = async () => {
     const app = express();
     app.use(bodyParser.json());
     app.use(bodyParser.urlencoded({ extended: true }));
 
+    //const channel = await createChannel();
+
     app.post('/api/v1/tickets',TicketController.create);
+
 
     app.listen(PORT, () => {
         console.log(`server started at PORT : ${PORT}`);
 
         
-        jobs(); 
+        // jobs(); 
+
 
         // 🔥 CRON JOB (हर 2 minute)
         // cron.schedule('*/2 * * * *', async () => {
