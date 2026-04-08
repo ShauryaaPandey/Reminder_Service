@@ -7,9 +7,11 @@ const cron = require('node-cron');
 const sender = require('./config/email-config'); // transporter
 const { PORT } = require('./config/server-config');
 const TicketController = require('./controller/ticket-controller');
-const { createChannel } = require('./util/messageQueue');
+const { subcribeMessage,createChannel } = require('./util/messageQueue');
+const {REMINDER_BINDING_KEY} = require('./config/server-config');
 
 const m = require('./models/notificationticket');
+const EmailService = require('./services/email-service');
 
 
 const jobs = require('./util/job');
@@ -19,10 +21,11 @@ const setupAndStartServer = async () => {
     app.use(bodyParser.json());
     app.use(bodyParser.urlencoded({ extended: true }));
 
-    //const channel = await createChannel();
 
     app.post('/api/v1/tickets',TicketController.create);
 
+    const channel = await createChannel();
+    subcribeMessage(channel,EmailService.subscribeEvents,REMINDER_BINDING_KEY,);
 
     app.listen(PORT, () => {
         console.log(`server started at PORT : ${PORT}`);

@@ -18,14 +18,25 @@ const createChannel = async() => {
 
 const subcribeMessage =async (channel,service,binding_key)=>{
     try {
-        const applicationQueue = await channel.assertQueue('QUEUE_NAME');
+        const applicationQueue = await channel.assertQueue('REMINDER_NAME');
 
         channel.bindQueue(applicationQueue.queue , EXCHANGE_NAME,binding_key );
         channel
 
+        //ye jo msg arha h , ye bookingservice k respo h send by controller 
         channel.consume(applicationQueue.queue,msg => {
-            console.log('Recieved data');
+            console.log('Recieved data : ');
             console.log(msg.content.toString());
+            const payload = JSON.parse(msg.content.toString());
+            // //if another service s aee data k according , we can do some actions
+            // if(payload.service == 'DEMO_SERVICE'){
+            //     //action
+            //     console.log("DEMO SERVICE");
+            //     service(payload);
+            // }
+            service(payload); //using a general function 
+            //instead of checking condition here ,we can use this function for checking in service layer
+
             channel.ack(msg);
         });
     } catch (error) {
@@ -35,7 +46,7 @@ const subcribeMessage =async (channel,service,binding_key)=>{
 
 const publishMessage = async(channel,binding_key,message)=>{
     try {
-        await channel.assertQueue(QUEUE_NAME);
+        await channel.assertQueue('REMINDER_NAME');
         await channel.publish(EXCHANGE_NAME,binding_key,Buffer.from(message));
     } catch (error) {
           throw error;  
